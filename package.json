@@ -1,0 +1,32 @@
+{
+  "name": "CPBot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node-dev --respawn server.ts",
+    "start": "node server.js",
+    "build": "tsc --esModuleInterop server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aaditgupta21/CPBot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aaditgupta21/CPBot/issues"
+  },
+  "homepage": "https://github.com/aaditgupta21/CPBot#readme",
+  "dependencies": {
+    "codeforces-api": "^1.0.3",
+    "discord.js": "^12.2.0",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {
+    "ts-node-dev": "^1.0.0-pre.56",
+    "typescript": "^3.9.7"
+  }
+}
