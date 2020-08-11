@@ -24,7 +24,9 @@
     "codeforces-api": "^1.0.3",
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
-    "ts-node": "^8.10.2"
+    "quickchart-js": "^1.0.2",
+    "ts-node": "^8.10.2",
+    "vega": "^5.13.0"
   },
   "devDependencies": {
     "@types/node": "^14.0.27",

@@ -4,7 +4,7 @@ import * as codeforces from 'codeforces-api'
 import { TOKEN, CODEFORCES_API, CODEFORCES_SECRET } from './config'
 import { success, fail } from './logger'
 import { helpEmbed } from './info'
-import { getRating, getContest } from './functions'
+import { getRating, getContest, getGraph } from './functions'
 
 const bot = new discord.Client()
 
@@ -27,6 +27,9 @@ bot.on('message', (msg) => {
         break
       case 'contest':
         getContest(msg, channel)
+        break
+      case 'graph':
+        getGraph(msg, channel)
         break
       default:
         channel.send(helpEmbed)
