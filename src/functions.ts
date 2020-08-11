@@ -2,21 +2,16 @@ import * as codeforces from 'codeforces-api'
 import * as discord from 'discord.js'
 import * as QuickChart from 'quickchart-js'
 
-import {
-  failEmbed,
-  successEmbed,
-  ratingSuccessEmbed,
-  contestEmbed,
-} from './utils'
+import { failEmbed, warnEmbed } from './utils'
 import { success, info, warn } from './logger'
 
 export const getRating = (
   msg: discord.Message,
   channel: discord.TextChannel
 ): void => {
-  const user = msg.content.substr(11, msg.content.length)
+  const user = msg.content.split(' ')[2]
   info(`Getting CodeForces rating for user ${user}`)
-  ratingSuccessEmbed(user, channel)
+  ratingEmbed(user, channel)
 }
 
 export const getGraph = (
@@ -104,29 +99,67 @@ export const getContest = (
   msg: discord.Message,
   channel: discord.TextChannel
 ): void => {
-  codeforces.contest.standings(
-    { contestId: parseInt(msg.content.substr(12, msg.content.length)) },
-    (err, res) => {
-      if (err) {
-        warn(`Invalid contest ID: ${err}`)
-        channel.send(
-          `Invalid contest ID: ${msg.content.substr(12, msg.content.length)}`
-        )
-      } else {
-        const contest = msg.content.substr(12, msg.content.length)
-        channel.send(`Fetching info for contest #${contest}`)
-        success(`Contest #${contest} successfully queried`)
-        let toSend = `There are ${res.problems.length} problems in contest #${contest}:\n`
-        res.problems.forEach((problem) => {
-          if (problem.points === undefined) {
-            toSend += ` ${problem.index}: ${problem.name} (<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
-          } else {
-            toSend += ` ${problem.index}: ${problem.name} - ${problem.points} points (<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
-          }
-        })
-        channel.send(toSend)
-        //contestEmbed()
-      }
+  const contest = msg.content.split(' ')[2]
+  codeforces.contest.standings({ contestId: parseInt(contest) }, (err, res) => {
+    if (err) {
+      warn(`Invalid contest ID: ${err}`)
+      channel.send(
+        failEmbed(`.cf contest {contest}`, `Invalid contest ID: ${contest}`)
+      )
+    } else {
+      success(`Contest #${contest} successfully queried`)
+      const main = `There are ${res.problems.length} problems in contest #${contest}:\n`
+      let toSend = ''
+      res.problems.forEach((problem) => {
+        if (problem.points === undefined) {
+          toSend += ` ${problem.index}: [${problem.name}](<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
+        } else {
+          toSend += ` ${problem.index} (${problem.points}): [${problem.name}](<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
+        }
+      })
+      channel.send(contestEmbed(main, toSend))
     }
-  )
+  })
+}
+
+export const ratingEmbed = (
+  user: string,
+  channel: discord.TextChannel
+): void => {
+  codeforces.user.info({ handles: user }, function (err, data) {
+    if (err) {
+      warn(`Error getting rating for ${user}`)
+      channel.send(
+        failEmbed(`.cf rating {user}`, `Error getting rating for ${user}`)
+      )
+    } else if (data[0].rating === undefined) {
+      warn(`User ${user} does not have a rating`)
+      channel.send(
+        new discord.MessageEmbed()
+          .setColor('#ffff00')
+          .setThumbnail(`https:${data[0].avatar}`)
+          .addFields({
+            name: user,
+            value: `User ${user} does not have a rating`,
+          })
+      )
+    } else {
+      warn(data[0].avatar)
+      channel.send(
+        new discord.MessageEmbed()
+          .setColor('#00ff00')
+          .setThumbnail(`https:${data[0].avatar}`)
+          .addFields({ name: user, value: `Rating is ${data[0].rating}` })
+      )
+    }
+  })
+}
+
+export const contestEmbed = (
+  type: string,
+  message: string
+): discord.MessageEmbed => {
+  return new discord.MessageEmbed()
+    .setColor('#00ff00')
+    .addFields({ name: type, value: message })
 }
