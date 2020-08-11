@@ -22,12 +22,15 @@ export const getProfile = (
     if (data[0].rating === undefined) {
       data[0].rating = 0
     }
+    if (data[0].rank === undefined) {
+      data[0].rank = "newbie"
+    }
     channel.send(
       successEmbed(
         user,
         `Profile: [${user}](https://codeforces.com/profile/${user})\nRating: ${
           data[0].rating
-        }\nRank: ${data[0].rank[0].toUpperCase()}${data[0].rank.slice(1)}`
+        }\nRank: ${data[0].rank}`
       ).setThumbnail(`https:${data[0].avatar}`)
     )
   })
