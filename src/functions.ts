@@ -41,7 +41,11 @@ export const getContest = (
         success(`Contest #${contest} successfully queried`)
         let toSend = `There are ${res.problems.length} problems in contest #${contest}:\n`
         res.problems.forEach((problem) => {
-          toSend += ` - ${problem.name}: ${problem.points} points\n`
+          if (problem.points === undefined) {
+            toSend += ` - ${problem.name} (<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
+          } else {
+            toSend += ` - ${problem.name}: ${problem.points} points (<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
+          }
         })
 
         channel.send(toSend)
