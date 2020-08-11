@@ -8,4 +8,4 @@
 [Rishi Peddakama](https://github.com/rpeddakama)
 [Raadwan Masum](https://raadwan.com/)
 
-> Discord Bot for Codeforces
+> Discord Bot for Codeforces Questions
