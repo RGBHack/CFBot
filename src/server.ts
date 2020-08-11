@@ -4,7 +4,7 @@ import * as codeforces from 'codeforces-api'
 import { TOKEN, CODEFORCES_API, CODEFORCES_SECRET } from './config'
 import { success, fail } from './logger'
 import { helpEmbed } from './info'
-import { getRating, getContest, getGraph } from './functions'
+import { getProfile, getContest, getGraph } from './functions'
 
 const bot = new discord.Client()
 
@@ -22,8 +22,8 @@ bot.on('message', (msg) => {
 
   if (command[0] === '.cf') {
     switch (command[1]) {
-      case 'rating':
-        getRating(msg, channel)
+      case 'profile':
+        getProfile(msg, channel)
         break
       case 'contest':
         getContest(msg, channel)

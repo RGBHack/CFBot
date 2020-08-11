@@ -2,15 +2,15 @@ import * as codeforces from 'codeforces-api'
 import * as discord from 'discord.js'
 import * as QuickChart from 'quickchart-js'
 
-import { failEmbed, warnEmbed } from './utils'
+import { failEmbed, warnEmbed, successEmbed } from './utils'
 import { success, info, warn } from './logger'
 
-export const getRating = (
+export const getProfile = (
   msg: discord.Message,
   channel: discord.TextChannel
 ): void => {
   const user = msg.content.split(' ')[2]
-  info(`Getting CodeForces rating for user ${user}`)
+  info(`Getting CodeForces profile for user ${user}`)
   ratingEmbed(user, channel)
 }
 
@@ -23,11 +23,11 @@ export const getGraph = (
 
   codeforces.user.rating({ handle: user }, async (err, data) => {
     if (err) {
-      warn(`Failed to get CodeForces rating for user ${user}`)
-      channel.send(`Bad Username`)
-    } else if (data.length == 0) {
+      warn(`Failed to get CodeForces profile for user ${user}`)
+      channel.send(failEmbed(`.cf graph {user}`, `Bad username: ${user}`))
+    } else if (data.length === 0) {
       warn(`User ${user} does not have any contests`)
-      channel.send(`User ${user} does not have any contests`)
+      channel.send(warnEmbed(user, `User ${user} does not have any contests`))
     } else {
       const chart = new QuickChart()
       const rand = Math.round(Math.random())
@@ -76,12 +76,17 @@ export const getGraph = (
         },
       }
 
+      let maxRating = 0
       data.forEach((d) => {
         const date = new Date(d.ratingUpdateTimeSeconds * 1000)
         const rating = d.newRating
 
         config.data.labels.push(date)
         config.data.datasets[0].data.push(rating)
+
+        if (rating > maxRating) {
+          maxRating = rating
+        }
       })
 
       chart
@@ -90,7 +95,11 @@ export const getGraph = (
         .setHeight('340px')
         .setBackgroundColor('#fff')
 
-      channel.send(await chart.getShortUrl())
+      const image = await chart.getShortUrl()
+
+      channel.send(
+        successEmbed(user, `Max Rating: ${maxRating}`).setImage(image)
+      )
     }
   })
 }
@@ -117,7 +126,7 @@ export const getContest = (
           toSend += ` ${problem.index} (${problem.points}): [${problem.name}](<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
         }
       })
-      channel.send(contestEmbed(main, toSend))
+      channel.send(successEmbed(main, toSend))
     }
   })
 }
@@ -128,38 +137,20 @@ export const ratingEmbed = (
 ): void => {
   codeforces.user.info({ handles: user }, function (err, data) {
     if (err) {
-      warn(`Error getting rating for ${user}`)
+      warn(`Error getting profile for ${user}`)
       channel.send(
-        failEmbed(`.cf rating {user}`, `Error getting rating for ${user}`)
+        failEmbed(`.cf profile {user}`, `Error getting profile for ${user}`)
       )
-    } else if (data[0].rating === undefined) {
-      warn(`User ${user} does not have a rating`)
-      channel.send(
-        new discord.MessageEmbed()
-          .setColor('#ffff00')
-          .setThumbnail(`https:${data[0].avatar}`)
-          .addFields({
-            name: user,
-            value: `User ${user} does not have a rating`,
-          })
-      )
-    } else {
-      warn(data[0].avatar)
-      channel.send(
-        new discord.MessageEmbed()
-          .setColor('#00ff00')
-          .setThumbnail(`https:${data[0].avatar}`)
-          .addFields({ name: user, value: `Rating is ${data[0].rating}` })
-      )
+      return
     }
+    if (data[0].rating === undefined) {
+      data[0].rating = 0
+    }
+    channel.send(
+      successEmbed(
+        user,
+        `Username: [${user}](https://codeforces.com/profile/${user})\nRating: ${data[0].rating}`
+      ).setThumbnail(`https:${data[0].avatar}`)
+    )
   })
-}
-
-export const contestEmbed = (
-  type: string,
-  message: string
-): discord.MessageEmbed => {
-  return new discord.MessageEmbed()
-    .setColor('#00ff00')
-    .addFields({ name: type, value: message })
 }

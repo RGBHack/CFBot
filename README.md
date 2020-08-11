@@ -1,4 +1,11 @@
 # CFBot
 
+## Creators
+
+[Rohan Juneja](https://rohanj.dev/)
+[Safin Singh](https://safinsingh.tech/)
+[Aadit Gupta](https://aaditgupta.tech/)
+[Rishi Peddakama]("https://github.com/rpeddakama)
+[Raadwan Masum](https://raadwan.com/)
+
 > Discord Bot for Codeforces
-> Click [here](https://discord.com/api/oauth2/authorize?client_id=742599385174638665&permissions=0&scope=bot) if you would like to add the bot to your server.
