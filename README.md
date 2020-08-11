@@ -1,1 +1,3 @@
-# CPBot
+# CFBot
+
+> Discord Bot for Codeforces
