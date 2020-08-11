@@ -9,16 +9,35 @@ export const getProfile = (
   msg: discord.Message,
   channel: discord.TextChannel
 ): void => {
-  const user = msg.content.split(' ')[2]
+  const user = extractArg(msg)
   info(`Getting CodeForces profile for user ${user}`)
-  ratingEmbed(user, channel)
+  codeforces.user.info({ handles: user }, function (err, data) {
+    if (err) {
+      warn(`Error getting profile for ${user}`)
+      channel.send(
+        failEmbed(`.cf profile {user}`, `Error getting profile for ${user}`)
+      )
+      return
+    }
+    if (data[0].rating === undefined) {
+      data[0].rating = 0
+    }
+    channel.send(
+      successEmbed(
+        user,
+        `Profile: [${user}](https://codeforces.com/profile/${user})\nRating: ${
+          data[0].rating
+        }\nRank: ${data[0].rank[0].toUpperCase()}${data[0].rank.slice(1)}`
+      ).setThumbnail(`https:${data[0].avatar}`)
+    )
+  })
 }
 
 export const getGraph = (
   msg: discord.Message,
   channel: discord.TextChannel
 ): void => {
-  const user = msg.content.split(' ')[2]
+  const user = extractArg(msg)
   info(`Getting CodeForces graph for user ${user}`)
 
   codeforces.user.rating({ handle: user }, async (err, data) => {
@@ -108,7 +127,7 @@ export const getContest = (
   msg: discord.Message,
   channel: discord.TextChannel
 ): void => {
-  const contest = msg.content.split(' ')[2]
+  const contest = extractArg(msg)
   codeforces.contest.standings({ contestId: parseInt(contest) }, (err, res) => {
     if (err) {
       warn(`Invalid contest ID: ${err}`)
@@ -131,26 +150,6 @@ export const getContest = (
   })
 }
 
-export const ratingEmbed = (
-  user: string,
-  channel: discord.TextChannel
-): void => {
-  codeforces.user.info({ handles: user }, function (err, data) {
-    if (err) {
-      warn(`Error getting profile for ${user}`)
-      channel.send(
-        failEmbed(`.cf profile {user}`, `Error getting profile for ${user}`)
-      )
-      return
-    }
-    if (data[0].rating === undefined) {
-      data[0].rating = 0
-    }
-    channel.send(
-      successEmbed(
-        user,
-        `Username: [${user}](https://codeforces.com/profile/${user})\nRating: ${data[0].rating}`
-      ).setThumbnail(`https:${data[0].avatar}`)
-    )
-  })
+const extractArg = (msg: discord.Message) => {
+  return msg.content.split(' ')[2]
 }
