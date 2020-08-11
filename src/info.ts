@@ -9,7 +9,11 @@ export const helpEmbed = new discord.MessageEmbed()
   .addFields(
     { name: '\u200B', value: '\u200B' },
     { name: '.cf rating {user}', value: 'Gets CodeForces rating for user' },
-    { name: '.cf contest {contest id}', value: 'Shows Problems for Contest Id' }
+    {
+      name: '.cf contest {contest id}',
+      value: 'Shows Problems for Contest Id',
+    },
+    { name: '.cf graph {user}', value: 'Shows CodeForces Graph of User' }
   )
   .setImage('')
   .setTimestamp()

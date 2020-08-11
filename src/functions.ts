@@ -36,6 +36,7 @@ export const getGraph = (
     } else {
       const chart = new QuickChart()
       const rand = Math.round(Math.random())
+
       const config = {
         type: 'line',
         data: {
@@ -74,24 +75,26 @@ export const getGraph = (
             xAxes: [
               {
                 display: false,
-                maxBarThickness: 100,
               },
             ],
           },
         },
       }
-      const maxRating = data.maxRating //stop i need to commit ok im stopping thats the only thing im adding :thumbsup:
+
       data.forEach((d) => {
         const date = new Date(d.ratingUpdateTimeSeconds * 1000)
         const rating = d.newRating
+
         config.data.labels.push(date)
         config.data.datasets[0].data.push(rating)
       })
+
       chart
         .setConfig(config)
         .setWidth('450px')
         .setHeight('340px')
         .setBackgroundColor('#fff')
+
       channel.send(await chart.getShortUrl())
     }
   })
@@ -116,9 +119,9 @@ export const getContest = (
         let toSend = `There are ${res.problems.length} problems in contest #${contest}:\n`
         res.problems.forEach((problem) => {
           if (problem.points === undefined) {
-            toSend += ` - ${problem.name} (<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
+            toSend += ` ${problem.index}: ${problem.name} (<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
           } else {
-            toSend += ` - ${problem.name}: ${problem.points} points (<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
+            toSend += ` ${problem.index}: ${problem.name} - ${problem.points} points (<https://codeforces.com/contest/${contest}/problem/${problem.index}>)\n`
           }
         })
         channel.send(toSend)

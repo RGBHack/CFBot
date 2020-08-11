@@ -26,6 +26,7 @@ export const ratingSuccessEmbed = (
   codeforces.user.info({ handle: user }, function (err, data) {
     if (err) {
       //send error embed
+      console.log(err)
     } else {
       channel.send(
         new discord.MessageEmbed()
