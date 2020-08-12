@@ -16,7 +16,7 @@ steps:
       runOptions: 'inline'
       inline: |
         cd /home/cpadmin/CFBot/
-        sudo git pull || true
+        sudo git pull
         sudo systemctl restart cfbot.service
       readyTimeout: '20000'
     displayName: 'Deploy'
