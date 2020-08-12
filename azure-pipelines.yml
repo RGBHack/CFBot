@@ -15,8 +15,10 @@ steps:
     sshEndpoint: 'CFBot Deployer'
     runOptions: 'commands'
     commands: |
-      cd /home/cpadmin/CFBot/
-      git pull
+      sudo cd /home/cpadmin/CFBot/
+      sudo git pull
       sudo systemctl restart cfbot.service
     readyTimeout: '20000'
   displayName: 'Deploy'
+
+# 🧠
