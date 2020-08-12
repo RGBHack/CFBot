@@ -4,5 +4,5 @@
 </h1>
 
 <p>
-  Discord Bot for Codeforces Questions
+  Discord Bot for CodeForces
 </p>
