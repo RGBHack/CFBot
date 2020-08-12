@@ -10,13 +10,13 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: NodeTool@0
+- task: SSH@0
   inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
-
-- script: |
-    cd ~/CFBot
-    git pull
-    sudo systemctl restart cfbot 
+    sshEndpoint: 'CFBot Deployer'
+    runOptions: 'commands'
+    commands: |
+      cd ~/CFBot
+      git pull
+      sudo systemctl restart cfbot.service
+    readyTimeout: '20000'
   displayName: 'Deploy'
