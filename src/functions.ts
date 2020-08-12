@@ -254,6 +254,7 @@ const getDiv2 = (): problemArray[] => {
   })
   return toSend
 }
+
 const getDiv3 = (): problemArray[] => {
   const div3Ratings = ['800', '800', '1200', '1200', '1600']
   const toSend: problemArray[] = []
