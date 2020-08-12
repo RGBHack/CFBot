@@ -4,21 +4,20 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
 trigger:
-- master
+  - master
 
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: SSH@0
-  inputs:
-    sshEndpoint: 'CFBot Deployer'
-    runOptions: 'inline'
-    inline: |
-      cd /home/cpadmin/CFBot/
-      rm azure-pipelines.yml
-      sudo git pull
-      sudo systemctl restart cfbot.service
-    readyTimeout: '20000'
-  displayName: 'Deploy'
-  
+  - task: SSH@0
+    inputs:
+      sshEndpoint: 'CFBot Deployer'
+      runOptions: 'inline'
+      inline: |
+        cd /home/cpadmin/CFBot/
+        rm azure-pipelines.yml
+        sudo git pull
+        sudo systemctl restart cfbot.service
+      readyTimeout: '20000'
+    displayName: 'Deploy'
