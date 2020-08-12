@@ -5,11 +5,13 @@ import { TOKEN, CODEFORCES_API, CODEFORCES_SECRET } from './config'
 import { success, fail } from './logger'
 import { helpEmbed } from './info'
 import { getProfile, getContest, getGraph } from './functions'
+import { genSchema } from './generate'
 
 const bot = new discord.Client()
 
 codeforces.setApis(CODEFORCES_API, CODEFORCES_SECRET)
 bot.login(TOKEN).catch((err) => fail(`Failed to log in with bot token. ${err}`))
+// genSchema() regenerates the problem schema
 
 bot.on('ready', () => {
   success('Bot is ready!')

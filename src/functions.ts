@@ -154,3 +154,22 @@ export const getContest = (
 const extractArg = (msg: discord.Message) => {
   return msg.content.split(' ')[2]
 }
+
+export const startMatch = (
+  msg: discord.Message,
+  channel: discord.TextChannel
+): void => {
+  console.log('hello')
+}
+
+/*
+1. 2v2 Match:
+.cf 2v2match [division]->
+Cf Bot: Who is your teammate?
+@_____
+Cf Bot: Who do you want to play against? (Reply with the ID of another user)
+@_______
+Cf bot: @____, who is your teammate?
+@______
+Cf bot: [Begins competition]
+*/
