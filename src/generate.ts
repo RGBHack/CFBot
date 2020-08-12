@@ -1,5 +1,5 @@
 import * as codeforces from 'codeforces-api'
-import { warn, fail } from './logger'
+import { warn, fail, success } from './logger'
 import { dbModel } from './models'
 
 export const genSchema = (): void => {
@@ -33,6 +33,8 @@ export const updateDB = (schema: any): void => {
   dbModel.create(schema, (err) => {
     if (err) {
       fail(err)
+    } else {
+      success('Successfully regenerated problem cluster!')
     }
   })
 }
