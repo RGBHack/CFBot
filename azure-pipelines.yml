@@ -14,7 +14,7 @@ steps:
   inputs:
     sshEndpoint: 'CFBot Deployer'
     runOptions: 'inline'
-    commands: |
+    inline: |
       cd /home/cpadmin/CFBot/
       sudo git pull
       sudo systemctl restart cfbot.service
