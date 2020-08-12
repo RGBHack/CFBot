@@ -13,8 +13,11 @@ steps:
 - task: SSH@0
   inputs:
     sshEndpoint: 'CFBot Deployer'
-    runOptions: 'commands'
-    commands: cd /home/cpadmin/CFBot/;sudo git pull;sudo systemctl restart cfbot.service
+    runOptions: 'inline'
+    commands: |
+      cd /home/cpadmin/CFBot/
+      sudo git pull
+      sudo systemctl restart cfbot.service
     readyTimeout: '20000'
   displayName: 'Deploy'
   
