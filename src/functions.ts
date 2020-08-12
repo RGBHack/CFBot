@@ -207,7 +207,7 @@ export const startMatch = (
       return
   }
 
-  let toSendStr: string = ''
+  let toSendStr = ''
   toSend.forEach((element) => {
     toSendStr += element.str + '\n'
   })
@@ -219,7 +219,7 @@ export const startMatch = (
 
 const getDiv1 = (): problemArray[] => {
   const div1Ratings = ['1600', '2000', '2400', '2800', '3200']
-  let toSend: problemArray[] = []
+  const toSend: problemArray[] = []
 
   let points = 100
   div1Ratings.forEach((el) => {
@@ -238,8 +238,7 @@ const getDiv1 = (): problemArray[] => {
 
 const getDiv2 = (): problemArray[] => {
   const div2Ratings = ['800', '800', '1600', '2000', '2400']
-
-  let toSend: problemArray[] = []
+  const toSend: problemArray[] = []
 
   let points = 100
   div2Ratings.forEach((el) => {
@@ -257,7 +256,7 @@ const getDiv2 = (): problemArray[] => {
 }
 const getDiv3 = (): problemArray[] => {
   const div3Ratings = ['800', '800', '1200', '1200', '1600']
-  let toSend: problemArray[] = []
+  const toSend: problemArray[] = []
 
   let points = 100
   div3Ratings.forEach((el) => {
