@@ -1,9 +1,27 @@
 import * as codeforces from 'codeforces-api'
 import * as discord from 'discord.js'
 import * as QuickChart from 'quickchart-js'
+import { dbModel, dbDoc } from './models'
 
 import { failEmbed, warnEmbed, successEmbed } from './utils'
-import { success, info, warn } from './logger'
+import { success, info, warn, fail } from './logger'
+
+interface problemArray {
+  str: string
+  contestId: number
+  index: string
+  points: number
+}
+
+let problems: dbDoc
+
+dbModel
+  .find()
+  .then((data) => {
+    problems = data[0]
+    success(`Got problems from database!`)
+  })
+  .catch((err) => fail(`Failed to get problems from database. Error: ${err}`))
 
 export const getProfile = (
   msg: discord.Message,
@@ -159,17 +177,99 @@ export const startMatch = (
   msg: discord.Message,
   channel: discord.TextChannel
 ): void => {
-  console.log('hello')
+  if (problems === undefined) {
+    return
+  }
+
+  if (msg.content.split(' ').length < 4) {
+    // adjust this for message
+    channel.send(failEmbed(`.cf match {div} [users]`, `Invalid match command!`))
+    return
+  }
+
+  const div = msg.content.split(' ')[2]
+  // parse time in message
+  const users = msg.content.slice(3, msg.content.split.length)
+
+  let toSend: problemArray[]
+  switch (div) {
+    case '1':
+      toSend = getDiv1()
+      break
+    case '2':
+      toSend = getDiv2()
+      break
+    case '3':
+      toSend = getDiv3()
+      break
+    default:
+      channel.send(failEmbed(`.cf match {div} [users]`, 'Invalid division'))
+      return
+  }
+
+  let toSendStr: string = ''
+  toSend.forEach((element) => {
+    toSendStr += element.str + '\n'
+  })
+  channel.send(successEmbed(`.cf match {div} [users]`, toSendStr))
+  setTimeout(() => {
+    //check the score
+  }, 1000)
 }
 
-/*
-1. 2v2 Match:
-.cf 2v2match [division]->
-Cf Bot: Who is your teammate?
-@_____
-Cf Bot: Who do you want to play against? (Reply with the ID of another user)
-@_______
-Cf bot: @____, who is your teammate?
-@______
-Cf bot: [Begins competition]
-*/
+const getDiv1 = (): problemArray[] => {
+  const div1Ratings = ['1600', '2000', '2400', '2800', '3200']
+  let toSend: problemArray[] = []
+
+  let points = 100
+  div1Ratings.forEach((el) => {
+    const random_index = Math.floor(Math.random() * problems[el].length)
+    const problem = JSON.parse(JSON.stringify(problems[el][random_index]))
+    toSend.push({
+      str: `${points}: [${problem['name']}](<https://codeforces.com/contest/${problem['contestId']}/problem/${problem['index']}>) [${problem['rating']}]`,
+      contestId: problem['contestId'] as number,
+      index: problem['index'] as string,
+      points: points,
+    })
+    points += 100
+  })
+  return toSend
+}
+
+const getDiv2 = (): problemArray[] => {
+  const div2Ratings = ['800', '800', '1600', '2000', '2400']
+
+  let toSend: problemArray[] = []
+
+  let points = 100
+  div2Ratings.forEach((el) => {
+    const random_index = Math.floor(Math.random() * problems[el].length)
+    const problem = JSON.parse(JSON.stringify(problems[el][random_index]))
+    toSend.push({
+      str: `${points}: [${problem['name']}](<https://codeforces.com/contest/${problem['contestId']}/problem/${problem['index']}>) [${problem['rating']}]`,
+      contestId: problem['contestId'] as number,
+      index: problem['index'] as string,
+      points: points,
+    })
+    points += 100
+  })
+  return toSend
+}
+const getDiv3 = (): problemArray[] => {
+  const div3Ratings = ['800', '800', '1200', '1200', '1600']
+  let toSend: problemArray[] = []
+
+  let points = 100
+  div3Ratings.forEach((el) => {
+    const random_index = Math.floor(Math.random() * problems[el].length)
+    const problem = JSON.parse(JSON.stringify(problems[el][random_index]))
+    toSend.push({
+      str: `${points}: [${problem['name']}](<https://codeforces.com/contest/${problem['contestId']}/problem/${problem['index']}>) [${problem['rating']}]`,
+      contestId: problem['contestId'] as number,
+      index: problem['index'] as string,
+      points: points,
+    })
+    points += 100
+  })
+  return toSend
+}

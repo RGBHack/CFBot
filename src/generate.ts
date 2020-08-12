@@ -21,6 +21,7 @@ export const genSchema = (): void => {
 
     Object.keys(schema).forEach((el) => {
       schema[el] = data.problems.filter((pr) => {
+        if (pr === '3200') return parseInt(el) >= 3000
         return 100 >= Math.abs(parseInt(el) - pr.rating)
       })
     })

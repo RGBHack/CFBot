@@ -3,9 +3,9 @@ import { Schema, Document } from 'mongoose'
 
 import { MONGO_URI } from './config'
 
-mongoose.connect(MONGO_URI, { useNewUrlParser: true })
+mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 
-export interface dbSchema extends Document {
+export interface dbDoc extends Document {
   '800': Array<any>
   '1200': Array<any>
   '1600': Array<any>
@@ -15,13 +15,14 @@ export interface dbSchema extends Document {
   '3200': Array<any>
 }
 
-const StuffSchema = new Schema({
+const dbSchema = new Schema({
   '800': { type: [Map], required: true },
   '1200': { type: [Map], required: true },
   '1600': { type: [Map], required: true },
   '2000': { type: [Map], required: true },
   '2400': { type: [Map], required: true },
+  '2800': { type: [Map], required: true },
   '3200': { type: [Map], required: true },
 })
 
-export const dbModel = mongoose.model<dbSchema>('problems', StuffSchema)
+export const dbModel = mongoose.model<dbDoc>('problems', dbSchema)
