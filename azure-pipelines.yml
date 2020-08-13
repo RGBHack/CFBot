@@ -17,6 +17,7 @@ steps:
       inline: |
         cd /home/cpadmin/CFBot/
         sudo git pull
+        sudo npm install
         sudo systemctl restart cfbot.service
       readyTimeout: '20000'
       failOnStderr: false
