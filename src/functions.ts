@@ -7,13 +7,16 @@ import { failEmbed, warnEmbed, successEmbed } from './utils'
 import { success, info, warn, fail } from './logger'
 
 interface problemArray {
-  str: string
   contestId: number
   index: string
   points: number
+  toString: () => string
+  problem: any
 }
 
 let problems: dbDoc
+
+let contest_number = 1
 
 dbModel
   .find()
@@ -29,7 +32,7 @@ export const getProfile = (
 ): void => {
   const user = extractArg(msg)
   info(`Getting CodeForces profile for user ${user}`)
-  codeforces.user.info({ handles: user }, function (err, data) {
+  codeforces.user.info({ handles: user }, (err, data) => {
     if (err) {
       warn(`Error getting profile for ${user}`)
       channel.send(
@@ -181,40 +184,102 @@ export const startMatch = (
     return
   }
 
-  if (msg.content.split(' ').length < 4) {
-    // adjust this for message
-    channel.send(failEmbed(`.cf match {div} [users]`, `Invalid match command!`))
+  if (msg.content.split(' ').length < 5) {
+    channel.send(
+      failEmbed(`.cf match {div} {time} [users]`, `Invalid match command!`)
+    )
     return
   }
 
   const div = msg.content.split(' ')[2]
-  // parse time in message
+  let time: number
+  try {
+    time = parseInt(msg.content.split(' ')[3])
+    if (time < 1) {
+      warn(`Invalid match: Time must be greater than one!`)
+      channel.send(
+        failEmbed(
+          `.cf match {div} {time} [users]`,
+          `Time must be greater than one!`
+        )
+      )
+      return
+    }
+  } catch (e) {
+    warn(`Invalid match: Failed to parse time!`)
+    channel.send(
+      failEmbed(`.cf match {div} {time} [users]`, `Failed to parse time!`)
+    )
+    return
+  }
   const users = msg.content.slice(3, msg.content.split.length)
+  //check if all the users exist using async/await
 
-  let toSend: problemArray[]
+  const cont = contest_number
+  contest_number++
+
+  let contest_problems: problemArray[]
   switch (div) {
     case '1':
-      toSend = getDiv1()
+      contest_problems = getDiv1()
       break
     case '2':
-      toSend = getDiv2()
+      contest_problems = getDiv2()
       break
     case '3':
-      toSend = getDiv3()
+      contest_problems = getDiv3()
       break
     default:
-      channel.send(failEmbed(`.cf match {div} [users]`, 'Invalid division'))
+      channel.send(
+        failEmbed(`.cf match {div} {time} [users]`, 'Invalid division')
+      )
       return
   }
 
   let toSendStr = ''
-  toSend.forEach((element) => {
-    toSendStr += element.str + '\n'
+  contest_problems.forEach((element) => {
+    toSendStr += element.toString() + '\n'
   })
-  channel.send(successEmbed(`.cf match {div} [users]`, toSendStr))
-  setTimeout(() => {
+
+  channel.send(successEmbed(`Starting contest #${cont}`, toSendStr))
+
+  let time_passed = 0
+
+  const updateMatch = () => {
     //check the score
-  }, 1000)
+    /*codeforces.user.status({}, function (err, data) {
+      if (err) {
+        channel.send(
+          failEmbed(`.cf match {div} {time} [users]`, `Could not ___`)
+        )
+        fail(`Could not __: Error: ${err}`)
+        return
+      }
+      //generate array of submission times
+      //sort times
+    })*/
+
+    contest_problems.forEach((elem) => (elem.points = elem.points - 10))
+
+    toSendStr = ''
+    contest_problems.forEach((element) => {
+      toSendStr += element.toString() + '\n'
+    })
+
+    channel.send(successEmbed(`Updated Points for Contest #${cont}`, toSendStr))
+    channel.send(successEmbed(`Scoreboard for Contest #${cont}`, toSendStr))
+
+    time_passed++
+    if (time_passed >= time) {
+      channel.send(
+        successEmbed(`Update for Contest #${cont}`, 'Match is over!')
+      )
+    } else {
+      setTimeout(updateMatch, 6000) // change
+    }
+  }
+
+  setTimeout(updateMatch, 6000)
 }
 
 const getDiv1 = (): problemArray[] => {
@@ -226,10 +291,13 @@ const getDiv1 = (): problemArray[] => {
     const random_index = Math.floor(Math.random() * problems[el].length)
     const problem = JSON.parse(JSON.stringify(problems[el][random_index]))
     toSend.push({
-      str: `${points}: [${problem['name']}](<https://codeforces.com/contest/${problem['contestId']}/problem/${problem['index']}>) [${problem['rating']}]`,
+      toString: function () {
+        return `${this.points}: [${this.problem['name']}](<https://codeforces.com/contest/${this.problem['contestId']}/problem/${this.problem['index']}>) [${this.problem['rating']}]`
+      },
       contestId: problem['contestId'] as number,
       index: problem['index'] as string,
       points: points,
+      problem: problem,
     })
     points += 100
   })
@@ -245,10 +313,13 @@ const getDiv2 = (): problemArray[] => {
     const random_index = Math.floor(Math.random() * problems[el].length)
     const problem = JSON.parse(JSON.stringify(problems[el][random_index]))
     toSend.push({
-      str: `${points}: [${problem['name']}](<https://codeforces.com/contest/${problem['contestId']}/problem/${problem['index']}>) [${problem['rating']}]`,
+      toString: function () {
+        return `${this.points}: [${this.problem['name']}](<https://codeforces.com/contest/${this.problem['contestId']}/problem/${this.problem['index']}>) [${this.problem['rating']}]`
+      },
       contestId: problem['contestId'] as number,
       index: problem['index'] as string,
       points: points,
+      problem: problem,
     })
     points += 100
   })
@@ -264,10 +335,13 @@ const getDiv3 = (): problemArray[] => {
     const random_index = Math.floor(Math.random() * problems[el].length)
     const problem = JSON.parse(JSON.stringify(problems[el][random_index]))
     toSend.push({
-      str: `${points}: [${problem['name']}](<https://codeforces.com/contest/${problem['contestId']}/problem/${problem['index']}>) [${problem['rating']}]`,
+      toString: function () {
+        return `${this.points}: [${this.problem['name']}](<https://codeforces.com/contest/${this.problem['contestId']}/problem/${this.problem['index']}>) [${this.problem['rating']}]`
+      },
       contestId: problem['contestId'] as number,
       index: problem['index'] as string,
       points: points,
+      problem: problem,
     })
     points += 100
   })
