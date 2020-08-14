@@ -280,26 +280,19 @@ export const startMatch = (
             (promiseData) => {
               promiseData.forEach((dataa) => {
                 let score = 0
-                //console.log(dataa.result[0])
                 dataa.result.forEach((submission) => {
-                  //console.log(submission)
                   const submitTime = new Date(
                     submission.creationTimeSeconds * 1000
                   )
                   if (submitTime < start_time) {
                     return
                   }
-                  contest_problems.forEach((p) => {
-                    /*console.log(p.contestId, submission.problem.contestId)
-                    console.log(p.index, submission.problem.index)
-                    console.log(dataa.result[0].author.members[0].handle)
-                    console.log(submission.verdict)*/
+                  contest_problems.forEach((p, index) => {
                     if (
                       p.contestId === submission.problem.contestId &&
                       p.index === submission.problem.index &&
                       submission.verdict === 'OK'
                     ) {
-                      console.log('added points')
                       score +=
                         p.origPoints -
                         3 *
@@ -308,6 +301,7 @@ export const startMatch = (
                               submitTime.getSeconds()) /
                               60
                           )
+                      contest_problems.splice(index, 1)
                     }
                   })
                 })
