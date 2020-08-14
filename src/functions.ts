@@ -264,8 +264,6 @@ export const startMatch = (
     const start_time = new Date()
 
     const updateMatch = () => {
-      //check the score
-      // https://codeforces.com/api/user.status?handle=${user}&from=1&count=5
       const promises: Promise<any>[] = []
       users.forEach((user) => {
         promises.push(
@@ -282,7 +280,9 @@ export const startMatch = (
             (promiseData) => {
               promiseData.forEach((dataa) => {
                 let score = 0
-                data.forEach((submission) => {
+                //console.log(dataa.result[0])
+                dataa.result.forEach((submission) => {
+                  //console.log(submission)
                   const submitTime = new Date(
                     submission.creationTimeSeconds * 1000
                   )
@@ -290,18 +290,23 @@ export const startMatch = (
                     return
                   }
                   contest_problems.forEach((p) => {
+                    /*console.log(p.contestId, submission.problem.contestId)
+                    console.log(p.index, submission.problem.index)
+                    console.log(dataa.result[0].author.members[0].handle)
+                    console.log(submission.verdict)*/
                     if (
-                      p.contestId === submission.contestId &&
-                      p.index === data.index &&
+                      p.contestId === submission.problem.contestId &&
+                      p.index === submission.problem.index &&
                       submission.verdict === 'OK'
                     ) {
+                      console.log('added points')
                       score +=
                         p.origPoints -
                         3 *
-                          Math.round(
-                            60 *
-                              (start_time.getSeconds() -
-                                submitTime.getSeconds())
+                          Math.ceil(
+                            (start_time.getSeconds() -
+                              submitTime.getSeconds()) /
+                              60
                           )
                     }
                   })
@@ -309,7 +314,6 @@ export const startMatch = (
                 if (data.length === 0) {
                   return
                 }
-                //console.log(dataa)
                 user_scores.push({
                   handle: dataa.result[0].author.members[0].handle,
                   score: score,
@@ -331,8 +335,6 @@ export const startMatch = (
           console.log(err)
           channel.send(failEmbed(`the following is fax`, `ur bad: ${err}`))
         })
-
-      //here
 
       contest_problems.forEach((elem) => (elem.points = elem.points - 3))
 
