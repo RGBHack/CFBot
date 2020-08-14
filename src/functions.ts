@@ -1,21 +1,14 @@
 import * as codeforces from 'codeforces-api'
 import * as discord from 'discord.js'
 import * as QuickChart from 'quickchart-js'
-import { dbModel, dbDoc } from './models'
+import fetch from 'node-fetch'
 
+import { dbModel, dbDoc } from './models'
 import { failEmbed, warnEmbed, successEmbed } from './utils'
 import { success, info, warn, fail } from './logger'
-
-interface problemArray {
-  contestId: number
-  index: string
-  points: number
-  toString: () => string
-  problem: any
-}
+import { problemArray, userScore } from './types'
 
 let problems: dbDoc
-
 let contest_number = 1
 
 dbModel
@@ -212,74 +205,158 @@ export const startMatch = (
     )
     return
   }
-  const users = msg.content.slice(3, msg.content.split.length)
-  //check if all the users exist using async/await
 
-  const cont = contest_number
-  contest_number++
-
-  let contest_problems: problemArray[]
-  switch (div) {
-    case '1':
-      contest_problems = getDiv1()
-      break
-    case '2':
-      contest_problems = getDiv2()
-      break
-    case '3':
-      contest_problems = getDiv3()
-      break
-    default:
-      channel.send(
-        failEmbed(`.cf match {div} {time} [users]`, 'Invalid division')
+  const users = msg.content.split(' ').slice(4, msg.content.split(' ').length)
+  if (users.length > 10) {
+    channel.send(
+      failEmbed(
+        `.cf match {div} {time} [time]`,
+        `Please specify less than 10 users!`
       )
-      return
+    )
+    return
   }
 
-  let toSendStr = ''
-  contest_problems.forEach((element) => {
-    toSendStr += element.toString() + '\n'
-  })
+  let user_list = ''
+  users.forEach((el) => (user_list += el + ';'))
+  user_list = user_list.slice(0, user_list.length - 1)
 
-  channel.send(successEmbed(`Starting contest #${cont}`, toSendStr))
-
-  let time_passed = 0
-
-  const updateMatch = () => {
-    //check the score
-    /*codeforces.user.status({}, function (err, data) {
-      if (err) {
-        channel.send(
-          failEmbed(`.cf match {div} {time} [users]`, `Could not ___`)
+  codeforces.user.info({ handles: user_list }, function (err, data) {
+    if (err) {
+      channel.send(
+        failEmbed(
+          `.cf match {div} {time} [users]`,
+          `Invalid user in: ${user_list}`
         )
-        fail(`Could not __: Error: ${err}`)
+      )
+      warn(`Failed to get usernames for match: Invalid user: ${user_list}`)
+      return
+    }
+    const cont = contest_number
+    contest_number++
+
+    let contest_problems: problemArray[]
+    switch (div) {
+      case '1':
+        contest_problems = getDiv1()
+        break
+      case '2':
+        contest_problems = getDiv2()
+        break
+      case '3':
+        contest_problems = getDiv3()
+        break
+      default:
+        channel.send(
+          failEmbed(`.cf match {div} {time} [users]`, 'Invalid division')
+        )
         return
-      }
-      //generate array of submission times
-      //sort times
-    })*/
+    }
 
-    contest_problems.forEach((elem) => (elem.points = elem.points - 10))
-
-    toSendStr = ''
+    let toSendStr = ''
     contest_problems.forEach((element) => {
       toSendStr += element.toString() + '\n'
     })
 
-    channel.send(successEmbed(`Updated Points for Contest #${cont}`, toSendStr))
-    channel.send(successEmbed(`Scoreboard for Contest #${cont}`, toSendStr))
+    channel.send(successEmbed(`Starting contest #${cont}`, toSendStr))
 
-    time_passed++
-    if (time_passed >= time) {
+    let time_passed = 0
+    const start_time = new Date()
+
+    const updateMatch = () => {
+      //check the score
+      // https://codeforces.com/api/user.status?handle=${user}&from=1&count=5
+      const promises: Promise<any>[] = []
+      users.forEach((user) => {
+        promises.push(
+          fetch(
+            `https://codeforces.com/api/user.status?handle=${user}&from=1&count=5`
+          )
+        )
+      })
+
+      Promise.all(promises)
+        .then((pData) => {
+          const user_scores: userScore[] = []
+          Promise.all(pData.map((dataaa) => dataaa.json())).then(
+            (promiseData) => {
+              promiseData.forEach((dataa) => {
+                let score = 0
+                data.forEach((submission) => {
+                  const submitTime = new Date(
+                    submission.creationTimeSeconds * 1000
+                  )
+                  if (submitTime < start_time) {
+                    return
+                  }
+                  contest_problems.forEach((p) => {
+                    if (
+                      p.contestId === submission.contestId &&
+                      p.index === data.index &&
+                      submission.verdict === 'OK'
+                    ) {
+                      score +=
+                        p.origPoints -
+                        3 *
+                          Math.round(
+                            60 *
+                              (start_time.getSeconds() -
+                                submitTime.getSeconds())
+                          )
+                    }
+                  })
+                })
+                if (data.length === 0) {
+                  return
+                }
+                //console.log(dataa)
+                user_scores.push({
+                  handle: dataa.result[0].author.members[0].handle,
+                  score: score,
+                })
+              })
+              let send_string = ''
+              user_scores.sort((a, b) => b.score - a.score)
+              user_scores.forEach((s) => {
+                send_string += `\`${s.handle}\`: ${s.score} points\n`
+              })
+
+              channel.send(
+                successEmbed(`Scoreboard update for match ${cont}`, send_string)
+              )
+            }
+          )
+        })
+        .catch((err) => {
+          console.log(err)
+          channel.send(failEmbed(`the following is fax`, `ur bad: ${err}`))
+        })
+
+      //here
+
+      contest_problems.forEach((elem) => (elem.points = elem.points - 3))
+
+      toSendStr = ''
+      contest_problems.forEach((element) => {
+        toSendStr += element.toString() + '\n'
+      })
+
       channel.send(
-        successEmbed(`Update for Contest #${cont}`, 'Match is over!')
+        successEmbed(`Updated Points for Contest #${cont}`, toSendStr)
       )
-    } else {
-      setTimeout(updateMatch, 6000) // change
-    }
-  }
 
-  setTimeout(updateMatch, 6000)
+      time_passed++
+      if (time_passed >= time) {
+        channel.send(
+          successEmbed(`Update for Contest #${cont}`, 'Match is over!')
+        )
+      } else {
+        setTimeout(updateMatch, 60000) // change
+      }
+    }
+
+    setTimeout(updateMatch, 60000)
+  })
 }
 
 const getDiv1 = (): problemArray[] => {
@@ -298,6 +375,7 @@ const getDiv1 = (): problemArray[] => {
       index: problem['index'] as string,
       points: points,
       problem: problem,
+      origPoints: points,
     })
     points += 100
   })
@@ -320,6 +398,7 @@ const getDiv2 = (): problemArray[] => {
       index: problem['index'] as string,
       points: points,
       problem: problem,
+      origPoints: points,
     })
     points += 100
   })
@@ -342,6 +421,7 @@ const getDiv3 = (): problemArray[] => {
       index: problem['index'] as string,
       points: points,
       problem: problem,
+      origPoints: points,
     })
     points += 100
   })

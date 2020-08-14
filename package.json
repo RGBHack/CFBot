@@ -20,11 +20,13 @@
   },
   "homepage": "https://github.com/rjawesome/CPBot#readme",
   "dependencies": {
+    "@types/node-fetch": "^2.5.7",
     "chalk": "^4.1.0",
     "codeforces-api": "^1.0.3",
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
     "mongoose": "^5.9.28",
+    "node-fetch": "^2.6.0",
     "quickchart-js": "^1.0.2",
     "ts-node": "^8.10.2",
     "vega": "^5.13.0"
