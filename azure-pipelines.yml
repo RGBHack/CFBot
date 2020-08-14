@@ -17,7 +17,7 @@ steps:
       inline: |
         cd /home/cpadmin/CFBot/
         sudo git pull
-        sudo /home/cpadmin/.nvm/versions/node/v14.8.0/bin/node /home/cpadmin/.nvm/versions/node/v14.8.0/lib/node_modules/npm/bin/npm-cli.js
+        sudo /home/cpadmin/.nvm/versions/node/v14.8.0/bin/node /home/cpadmin/.nvm/versions/node/v14.8.0/lib/node_modules/npm/bin/npm-cli.js i
         sudo systemctl restart cfbot.service
       readyTimeout: '20000'
       failOnStderr: false
